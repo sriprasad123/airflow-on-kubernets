@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-webserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: webserver
+  template:
+    metadata:
+      labels:
+        component: webserver
+    spec:
+      containers:
+        - name: webserver
+          image: apache/airflow:latest
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: mysql-secret
+              mountPath: /etc/airflow/mysql
+              readOnly: true
+          command: ["airflow"]
+          args: ["webserver"]
+          env:
+            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+              value: "mysql+mysqldb://username:password@mysql-hostname:3306/airflow_db?ssl_ca=/etc/airflow/mysql/ca.pem&ssl_cert=/etc/airflow/mysql/client-cert.pem&ssl_key=/etc/airflow/mysql/client-key.pem"
+      volumes:
+        - name: mysql-secret
+          secret:
+            secretName: airflow-mysql-secret
