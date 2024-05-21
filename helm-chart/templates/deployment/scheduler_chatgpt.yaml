@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-scheduler
+  namespace: airflow
+  labels:
+    app: airflow
+    component: scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow
+      component: scheduler
+  template:
+    metadata:
+      labels:
+        app: airflow
+        component: scheduler
+    spec:
+      containers:
+        - name: scheduler
+          image: apache/airflow:2.3.3
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: AIRFLOW__CORE__EXECUTOR
+              value: "LocalExecutor"  # Use the appropriate executor for your setup
+            - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
+              value: "postgresql+psycopg2://<db_user>:<db_password>@<db_host>:<db_port>/<db_name>"
+            - name: AIRFLOW__CORE__FERNET_KEY
+              value: "<your_fernet_key>"  # Ensure you have a valid fernet key
+            - name: AIRFLOW__CORE__LOAD_EXAMPLES
+              value: "False"
+            - name: AIRFLOW__SCHEDULER__CHILD_PROCESS_LOG_DIRECTORY
+              value: "/opt/airflow/logs/scheduler"
+          volumeMounts:
+            - name: airflow-logs
+              mountPath: /opt/airflow/logs
+          ports:
+            - containerPort: 8793  # Health check port
+      volumes:
+        - name: airflow-logs
+          emptyDir: {}
