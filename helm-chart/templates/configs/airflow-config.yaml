@@ -12,6 +12,7 @@ data:
     fernet_key = KtzWdmGi2DDMVG3vyu7gSGdfCSnFNpCQnKtcvYzS8wk=
     # ui to hide sensitive variable fields when set to true
     hide_sensitive_variable_fields = True
+    dags_folder = /opt/airflow/dags
 
     [logging]
     remote_logging = false
