@@ -24,20 +24,40 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: AIRFLOW__CORE__EXECUTOR
-              value: "LocalExecutor"  # Use the appropriate executor for your setup
+              value: "KubernetesExecutor"
             - name: AIRFLOW__CORE__SQL_ALCHEMY_CONN
-              value: "postgresql+psycopg2://<db_user>:<db_password>@<db_host>:<db_port>/<db_name>"
+              valueFrom:
+                configMapKeyRef:
+                  name: airflow-config
+                  key: airflow.cfg
             - name: AIRFLOW__CORE__FERNET_KEY
-              value: "<your_fernet_key>"  # Ensure you have a valid fernet key
+              valueFrom:
+                configMapKeyRef:
+                  name: airflow-config
+                  key: fernet_key
             - name: AIRFLOW__CORE__LOAD_EXAMPLES
               value: "False"
             - name: AIRFLOW__SCHEDULER__CHILD_PROCESS_LOG_DIRECTORY
               value: "/opt/airflow/logs/scheduler"
+            - name: AIRFLOW__KUBERNETES__POD_TEMPLATE_FILE
+              value: "/opt/airflow/pod_templates/pod_template.yaml"
           volumeMounts:
+            - name: airflow-config
+              mountPath: /opt/airflow/airflow.cfg
+              subPath: airflow.cfg
+            - name: airflow-pod-template
+              mountPath: /opt/airflow/pod_templates/pod_template.yaml
+              subPath: pod_template.yaml
             - name: airflow-logs
               mountPath: /opt/airflow/logs
           ports:
             - containerPort: 8793  # Health check port
       volumes:
+        - name: airflow-config
+          configMap:
+            name: airflow-config
+        - name: airflow-pod-template
+          configMap:
+            name: airflow-pod-template
         - name: airflow-logs
           emptyDir: {}
