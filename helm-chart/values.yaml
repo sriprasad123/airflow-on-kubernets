@@ -1,17 +1,23 @@
 airflow:
-  dags_image:
-    repository: localhost:5001/airflow_first_dag    # repository URL
-    tag: 0.1.0                                      # airflow dags image version
-    pull_policy: Always                             # change this to `Always` if changes applied on same tagged image.
-  webserver:
-    username: admin
-    password: "12345678"
-    secret_key: topsecret
-  configs:
-    fernet_key: 9jgWYeShQAYRS5E4Gu_n9GoGAuml4n50IpS-jifVqdA=
-
-mysql:
-  host: mysql
-  username: airflow
-  database: airflow
-  password: "12345678"
+  executor: KubernetesExecutor
+  image:
+    repository: your-docker-repo/airflow
+    tag: latest
+  namespace: airflow
+  volumes:
+    - name: example-volume-1
+      persistentVolumeClaim:
+        claimName: example-claim-1
+    - name: example-volume-2
+      persistentVolumeClaim:
+        claimName: example-claim-2
+  volumeMounts:
+    - name: example-volume-1
+      mountPath: /path/inside/container1
+    - name: example-volume-2
+      mountPath: /path/inside/container2
+  env:
+    - name: EXAMPLE_ENV_VAR_1
+      value: example_value_1
+    - name: EXAMPLE_ENV_VAR_2
+      value: example_value_2
